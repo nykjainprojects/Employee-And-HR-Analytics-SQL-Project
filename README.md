@@ -72,7 +72,7 @@ CREATE TABLE 	 (
 - **Employee Count**: Determine the total number of employee in the dataset.
 - **Manager Count**: Determine the total number of Manager in the dataset.
 - **Department Count**: Identify all unique Departments in the dataset.
-```
+  ```
 
 ### 3. Data Analysis & Findings
 
@@ -90,7 +90,8 @@ JOIN Department d ON e.DeptID = d.DeptID;;
 SELECT d.DeptName, AVG(e.Salary) AS AvgSalary
 FROM Employee e
 JOIN Department d ON e.DeptID = d.DeptID
-GROUP BY d.DeptName;```
+GROUP BY d.DeptName;
+```
 
 3. **Find employees with performance rating above 4**:
 ```sql
