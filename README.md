@@ -1,227 +1,306 @@
-# Retail Sales Analysis SQL Project
+<img width="65" height="21" alt="image" src="https://github.com/user-attachments/assets/746208c9-682d-41f4-a22e-ce96662f642a" /># Employee and HR Analytics SQL Project
 
 ## Project Overview
 
-**Project Title**: Retail Sales Analysis  
+**Project Title**: Employee and HR Analytics 
 **Level**: Beginner  
-**Database**: `p1_retail_db`
+**Database**: `EMP_HR_ANALYTICS`
 
-This project is designed to demonstrate SQL skills and techniques typically used by data analysts to explore, clean, and analyze retail sales data. The project involves setting up a retail sales database, performing exploratory data analysis (EDA), and answering specific business questions through SQL queries. This project is ideal for those who are starting their journey in data analysis and want to build a solid foundation in SQL.
+This SQL project provides a complete Employee and HR analytics database, including tables for Employee, Department, Performance, and Attendance. The project enables advanced HR reporting and analytics with more than 15 practical query examples. It is designed for portfolio development and learning advanced SQL concepts, including JOINs, aggregate queries, ranking, window functions, and analytical tasks.
 
 ## Objectives
 
-1. **Set up a retail sales database**: Create and populate a retail sales database with the provided sales data.
+1. **Set up a database**: Build a database to store employee details, departments, salaries, attendance, and performance metrics.
 2. **Data Cleaning**: Identify and remove any records with missing or null values.
 3. **Exploratory Data Analysis (EDA)**: Perform basic exploratory data analysis to understand the dataset.
-4. **Business Analysis**: Use SQL to answer specific business questions and derive insights from the sales data.
+4. **Data Analysis**: Write queries to analyze headcount trends, salary distribution, employee turnover, and department-wise performance.
 
 ## Project Structure
 
-### 1. Database Setup
+### 1. Database Structure
 
-- **Database Creation**: The project starts by creating a database named `p1_retail_db`.
-- **Table Creation**: A table named `retail_sales` is created to store the sales data. The table structure includes columns for transaction ID, sale date, sale time, customer ID, gender, age, product category, quantity sold, price per unit, cost of goods sold (COGS), and total sale amount.
+**Department**: Stores department details (DeptID, DeptName, Location)
 
-```sql
-CREATE DATABASE p1_retail_db;
+**Employee**: Stores employee information (EmpID, FirstName, LastName, JobTitle, ManagerID, HireDate, Salary, DeptID)
 
-CREATE TABLE retail_sales
-(
-    transactions_id INT PRIMARY KEY,
-    sale_date DATE,	
-    sale_time TIME,
-    customer_id INT,	
-    gender VARCHAR(10),
-    age INT,
-    category VARCHAR(35),
-    quantity INT,
-    price_per_unit FLOAT,	
-    cogs FLOAT,
-    total_sale FLOAT
+**Performance**: Stores performance reviews (PerfID, EmpID, ReviewDate, Rating, Comments)
+
+**Attendance**: Tracks daily attendance status (AttID, EmpID, AttDate, Status)
+
+```sql 
+Create database EMP_HR_ANALYTICS;
+
+CREATE TABLE Department (
+  DeptID INT PRIMARY KEY,
+  DeptName VARCHAR(50),
+  Location VARCHAR(50)
+);
+
+CREATE TABLE Employee (
+  EmpID INT PRIMARY KEY,
+  FirstName VARCHAR(50),
+  LastName VARCHAR(50),
+  JobTitle VARCHAR(50),
+  ManagerID INT NULL,
+  HireDate DATE,
+  Salary DECIMAL(10,2),
+  DeptID INT,
+  FOREIGN KEY (DeptID) REFERENCES Department(DeptID),
+  FOREIGN KEY (ManagerID) REFERENCES Employee(EmpID)
+);
+
+CREATE TABLE Performance (
+  PerfID INT PRIMARY KEY,
+  EmpID INT,
+  ReviewDate DATE,
+  Rating INT,
+  Comments VARCHAR(255),
+  FOREIGN KEY (EmpID) REFERENCES Employee(EmpID)
+);
+
+CREATE TABLE 	 (
+  AttID INT PRIMARY KEY,
+  EmpID INT,
+  AttDate DATE,
+  Status VARCHAR(20),  -- e.g. Present, Absent, Leave
+  FOREIGN KEY (EmpID) REFERENCES Employee(EmpID)
 );
 ```
 
 ### 2. Data Exploration & Cleaning
 
-- **Record Count**: Determine the total number of records in the dataset.
-- **Customer Count**: Find out how many unique customers are in the dataset.
-- **Category Count**: Identify all unique product categories in the dataset.
-- **Null Value Check**: Check for any null values in the dataset and delete records with missing data.
-
-```sql
-SELECT COUNT(*) FROM retail_sales;
-SELECT COUNT(DISTINCT customer_id) FROM retail_sales;
-SELECT DISTINCT category FROM retail_sales;
-
-SELECT * FROM retail_sales
-WHERE 
-    sale_date IS NULL OR sale_time IS NULL OR customer_id IS NULL OR 
-    gender IS NULL OR age IS NULL OR category IS NULL OR 
-    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL;
-
-DELETE FROM retail_sales
-WHERE 
-    sale_date IS NULL OR sale_time IS NULL OR customer_id IS NULL OR 
-    gender IS NULL OR age IS NULL OR category IS NULL OR 
-    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL;
+- **Employee Count**: Determine the total number of employee in the dataset.
+- **Manager Count**: Determine the total number of Manager in the dataset.
+- **Department Count**: Identify all unique Departments in the dataset.
 ```
 
 ### 3. Data Analysis & Findings
 
-The following SQL queries were developed to answer specific business questions:
+The following SQL queries were developed to analyze Employee performance:
 
-1. **Write a SQL query to retrieve all columns for sales made on '2022-11-05**:
+1. **List all employees with their department names**:
 ```sql
-SELECT *
-FROM retail_sales
-WHERE sale_date = '2022-11-05';
+SELECT e.EmpID, e.FirstName, e.LastName, d.DeptName
+FROM Employee e
+JOIN Department d ON e.DeptID = d.DeptID;;
 ```
 
-2. **Write a SQL query to retrieve all transactions where the category is 'Clothing' and the quantity sold is more than 4 in the month of Nov-2022**:
+2. **Get average salary by department**:
 ```sql
-SELECT 
-  *
-FROM retail_sales
-WHERE 
-    category = 'Clothing'
-    AND 
-    TO_CHAR(sale_date, 'YYYY-MM') = '2022-11'
-    AND
-    quantity >= 4
+SELECT d.DeptName, AVG(e.Salary) AS AvgSalary
+FROM Employee e
+JOIN Department d ON e.DeptID = d.DeptID
+GROUP BY d.DeptName;```
+
+3. **Find employees with performance rating above 4**:
+```sql
+SELECT e.FirstName, e.LastName, p.Rating, p.Comments
+FROM Performance p
+JOIN Employee e ON p.EmpID = e.EmpID
+WHERE p.Rating > 4
 ```
 
-3. **Write a SQL query to calculate the total sales (total_sale) for each category.**:
-```sql
-SELECT 
-    category,
-    SUM(total_sale) as net_sale,
-    COUNT(*) as total_orders
-FROM retail_sales
-GROUP BY 1
+4. **Count attendance status for each employee in September 2025**:
+```SELECT e.FirstName, e.LastName, a.Status, COUNT(*) AS Days
+FROM Attendance a
+JOIN Employee e ON a.EmpID = e.EmpID
+WHERE a.AttDate BETWEEN '2025-09-01' AND '2025-09-30'
+GROUP BY e.FirstName, e.LastName, a.Status;
 ```
 
-4. **Write a SQL query to find the average age of customers who purchased items from the 'Beauty' category.**:
+5. **Find employees who earn more than their manager**:
 ```sql
-SELECT
-    ROUND(AVG(age), 2) as avg_age
-FROM retail_sales
-WHERE category = 'Beauty'
+SELECT e.EmpID, e.FirstName, e.LastName, e.Salary, m.FirstName AS ManagerFirstName, m.LastName AS ManagerLastName, m.Salary AS ManagerSalary
+FROM Employee e
+JOIN Employee m ON e.ManagerID = m.EmpID
+WHERE e.Salary > m.Salary;
 ```
 
-5. **Write a SQL query to find all transactions where the total_sale is greater than 1000.**:
+6. **Calculate year-over-year salary growth for each employee**:
 ```sql
-SELECT * FROM retail_sales
-WHERE total_sale > 1000
-```
-
-6. **Write a SQL query to find the total number of transactions (transaction_id) made by each gender in each category.**:
-```sql
-SELECT 
-    category,
-    gender,
-    COUNT(*) as total_trans
-FROM retail_sales
-GROUP 
-    BY 
-    category,
-    gender
-ORDER BY 1
-```
-
-7. **Write a SQL query to calculate the average sale for each month. Find out best selling month in each year**:
-```sql
-SELECT 
-       year,
-       month,
-    avg_sale
-FROM 
-(    
-SELECT 
-    EXTRACT(YEAR FROM sale_date) as year,
-    EXTRACT(MONTH FROM sale_date) as month,
-    AVG(total_sale) as avg_sale,
-    RANK() OVER(PARTITION BY EXTRACT(YEAR FROM sale_date) ORDER BY AVG(total_sale) DESC) as rank
-FROM retail_sales
-GROUP BY 1, 2
-) as t1
-WHERE rank = 1
-```
-
-8. **Write a SQL query to find the top 5 customers based on the highest total sales **:
-```sql
-SELECT 
-    customer_id,
-    SUM(total_sale) as total_sales
-FROM retail_sales
-GROUP BY 1
-ORDER BY 2 DESC
-LIMIT 5
-```
-
-9. **Write a SQL query to find the number of unique customers who purchased items from each category.**:
-```sql
-SELECT 
-    category,    
-    COUNT(DISTINCT customer_id) as cnt_unique_cs
-FROM retail_sales
-GROUP BY category
-```
-
-10. **Write a SQL query to create each shift and number of orders (Example Morning <12, Afternoon Between 12 & 17, Evening >17)**:
-```sql
-WITH hourly_sale
-AS
-(
-SELECT *,
-    CASE
-        WHEN EXTRACT(HOUR FROM sale_time) < 12 THEN 'Morning'
-        WHEN EXTRACT(HOUR FROM sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
-        ELSE 'Evening'
-    END as shift
-FROM retail_sales
+WITH SalaryByYear AS (
+  SELECT EmpID, EXTRACT(YEAR FROM HireDate) AS Year, Salary
+  FROM Employee
+),
+SalaryGrowth AS (
+  SELECT 
+    s1.EmpID, s1.Year AS Year,
+    s1.Salary AS CurrentSalary,
+    s2.Salary AS PreviousSalary,
+    ROUND(((s1.Salary - s2.Salary) / NULLIF(s2.Salary, 0)) * 100, 2) AS SalaryGrowthPercent
+  FROM SalaryByYear s1
+  LEFT JOIN SalaryByYear s2 ON s1.EmpID = s2.EmpID AND s1.Year = s2.Year + 1
 )
-SELECT 
-    shift,
-    COUNT(*) as total_orders    
-FROM hourly_sale
-GROUP BY shift
+SELECT * FROM SalaryGrowth
+WHERE SalaryGrowthPercent IS NOT NULL;
 ```
+
+7. **Rank employees within their departments by salary**:
+```sql
+SELECT 
+  EmpID, FirstName, LastName, DeptID, Salary,
+  RANK() OVER (PARTITION BY DeptID ORDER BY Salary DESC) AS SalaryRank
+FROM Employee;
+```
+
+8. **Calculate the percentage of employees meeting or exceeding a rating threshold by department**:
+```sql
+WITH RatedEmployees AS (
+  SELECT e.DeptID, p.EmpID, p.Rating
+  FROM Employee e
+  JOIN Performance p ON e.EmpID = p.EmpID
+),
+RatingsSummary AS (
+  SELECT DeptID,
+    COUNT(*) AS TotalEmployees,
+    SUM(CASE WHEN Rating >= 4 THEN 1 ELSE 0 END) AS EmployeesMeetingThreshold
+  FROM RatedEmployees
+  GROUP BY DeptID
+)
+SELECT d.DeptName, 
+       TotalEmployees,
+       EmployeesMeetingThreshold,
+       ROUND((EmployeesMeetingThreshold * 100.0) / TotalEmployees, 2) AS PercentMeetingThreshold
+FROM RatingsSummary rs
+JOIN Department d ON rs.DeptID = d.DeptID;
+```
+
+9. **Identify employees with perfect attendance in a given month**:
+```sql
+WITH MonthlyAttendance AS (
+  SELECT EmpID, COUNT(*) AS DaysPresent
+  FROM Attendance
+  WHERE AttDate BETWEEN '2025-09-01' AND '2025-09-30' AND Status = 'Present'
+  GROUP BY EmpID
+),
+WorkingDays AS (
+  SELECT COUNT(*) AS TotalWorkingDays
+  FROM Attendance
+  WHERE AttDate BETWEEN '2025-09-01' AND '2025-09-30'
+  GROUP BY AttDate
+)
+SELECT e.EmpID, e.FirstName, e.LastName
+FROM Employee e
+JOIN MonthlyAttendance ma ON e.EmpID = ma.EmpID
+CROSS JOIN WorkingDays wd
+WHERE ma.DaysPresent = wd.TotalWorkingDays;
+```
+
+10. **Employees with performance rating 4 or above and their comments**:
+```sql
+SELECT e.EmpID, e.FirstName, e.LastName, p.Rating, p.Comments
+FROM Employee e
+JOIN Performance p ON e.EmpID = p.EmpID
+WHERE p.Rating >= 4;
+```
+11. **Count of employees by attendance status on a specific date**:
+```sql
+Select Status, Count(*) as EmpCount
+From Attendance
+Where Attdate='2025-09-01'
+Group by Status;
+```
+12. **Average salary of employees with performance rating 5**:
+```sql
+Select Round(Avg(E.Salary),2) As AvgSalaryHighPerformers
+From Employee E
+Join performance P on P.empID= E.EmpID
+Where P.Rating=5;
+```
+13. **Employees on leave and their departments**:
+```sql
+Select E.FirstName, E.LastName, D.DeptName
+From employee E
+Join department D on D.DeptID=E.DeptID
+Join attendance A on A.EmpID=E.EmpID
+Where A.Attdate = '2025-09-01' and A.Status='Leave';
+```
+14. **Performance summary: average rating by department**:
+```sql
+Select D.Deptname, Avg(P.Rating) AS AvgDeptRating
+From Department D
+Join Employee E on E.deptID=D.deptid
+Join performance P on P.EmpID=E.empID
+group by D.DeptName;
+```
+15. **Employees rated 3 or less with their attendance status**:
+```sql
+Select E.firstName, E.lastName, Status
+From employee E
+Join attendance A on A.EmpID=E.EmpID
+Join performance P on P.EmpID=E.EmpID
+Where P.rating<=3 and Attdate='2025-09-01';
+```
+16. **List employees not present on 2025-09-01 along with their manager names**:
+```sql
+Select E.EmpID, E.FirstName as EmpFirstName, E.lastName as EmpLastName, M.firstname as ManFirstName, M.lastName as ManLastName
+From Employee E
+Left Join employee M on E.ManagerID=M.EmpID
+Join attendance A on A.EmpID=E.empid
+Where  A.AttDate='2025-09-01' and A.Status <> 'Present' ;
+```
+17. **Employees hired after 2018 with their performance ratings**:
+```sql
+Select E.FirstName,E.lastName, P.Rating
+From employee E
+Join performance P on E.EmpID=P.EmpID
+Where E.HireDate>'2018-01-01';
+```
+18. **Number of employees reporting to each manager**:
+```sql
+Select M.FirstName, M.LastName, Count(E.empID) as EmpCount
+From employee E
+Join employee M on M.EmpID=E.ManagerID
+group By M.FirstName,M.LastName
+Order By Count(E.empID) Desc;
+```
+19. **Attendance percentage (Present days) for each employee in September 2025**:
+```sql
+With TotalDays AS(
+	Select Count(distinct Attdate) AS WorkingDays
+    From attendance
+    Where AttDate Between '2025-09-01' and '2025-09-30'
+    ),
+PresentDays AS (
+	Select EmpID, Count(*) as DaysPresent
+    From attendance
+    Where Status = 'Present' and AttDate Between '2025-09-01' and '2025-09-30'
+    Group by EmpID
+)
+Select E.FirstName, E.LastName,
+		Round((PD.DaysPresent / TD.WorkingDays) * 100,2) as AttendancePercent
+From Employee E
+Left Join PresentDays PD on PD.empID=E.EmpID
+Cross Join TotalDays TD
+Order By AttendancePercent Desc;
+```
+
 
 ## Findings
 
-- **Customer Demographics**: The dataset includes customers from various age groups, with sales distributed across different categories such as Clothing and Beauty.
-- **High-Value Transactions**: Several transactions had a total sale amount greater than 1000, indicating premium purchases.
-- **Sales Trends**: Monthly analysis shows variations in sales, helping identify peak seasons.
-- **Customer Insights**: The analysis identifies the top-spending customers and the most popular product categories.
+- The dataset includes comprehensive employee, department, performance, and attendance information for an HR analytics environment, with over 15 employees and records for multiple HR functions.
+- Average salary by department reveals higher compensation in managerial, research, and marketing roles, with entry-level and support departments earning less.
+- Around 30% of employees regularly achieve high performance ratings (4 and above), showing strong overall productivity, while only a few employees consistently receive ratings below 3.
 
 ## Reports
 
-- **Sales Summary**: A detailed report summarizing total sales, customer demographics, and category performance.
-- **Trend Analysis**: Insights into sales trends across different months and shifts.
-- **Customer Insights**: Reports on top customers and unique customer counts per category.
+- **Department Salary Summary**: Managers and product/marketing professionals have the highest average salaries, as shown by joining Employee and Department tables and aggregating by DeptName.
+- **Performance Review Summary**: Employees with performance ratings above 4 are found across research, IT, and marketing, indicating these departments foster excellence. Detailed comments on strengths are recorded in the Performance table.
+- **Attendance Analysis**: Most employees maintain above 80% attendance in September 2025. Only a few employees (identified by monthly queries) had perfect attendance, while others had some absences or leaves. Attendance breakdowns by status (Present, Absent, Leave) are available by combining Employee and Attendance tables.
 
 ## Conclusion
 
-This project serves as a comprehensive introduction to SQL for data analysts, covering database setup, data cleaning, exploratory data analysis, and business-driven SQL queries. The findings from this project can help drive business decisions by understanding sales patterns, customer behavior, and product performance.
+The Employee And HR Analytics SQL project demonstrates effective HR data management and provides meaningful analytics through complex queries. The database structure supports granular reporting on salaries, performance, and attendance, and the sample data highlights strong departmental performance with targeted areas for improvement. The project serves as a robust portfolio example for advanced SQL capabilities in HR analytics contexts.
 
 ## How to Use
 
 1. **Clone the Repository**: Clone this project repository from GitHub.
-2. **Set Up the Database**: Run the SQL scripts provided in the `database_setup.sql` file to create and populate the database.
-3. **Run the Queries**: Use the SQL queries provided in the `analysis_queries.sql` file to perform your analysis.
+2. **Set Up the Database**: Run the SQL scripts provided in the `Employee And HR Analytics.sql` file to create and populate the database.
+3. **Run the Queries**: Execute included SELECT queries and experiment with analytics tasks
 4. **Explore and Modify**: Feel free to modify the queries to explore different aspects of the dataset or answer additional business questions.
 
-## Author - Zero Analyst
+## Author - nykjainprojects
 
 This project is part of my portfolio, showcasing the SQL skills essential for data analyst roles. If you have any questions, feedback, or would like to collaborate, feel free to get in touch!
 
-### Stay Updated and Join the Community
 
-For more content on SQL, data analysis, and other data-related topics, make sure to follow me on social media and join our community:
-
-- **YouTube**: [Subscribe to my channel for tutorials and insights](https://www.youtube.com/@zero_analyst)
-- **Instagram**: [Follow me for daily tips and updates](https://www.instagram.com/zero_analyst/)
-- **LinkedIn**: [Connect with me professionally](https://www.linkedin.com/in/najirr)
-- **Discord**: [Join our community to learn and grow together](https://discord.gg/36h5f2Z5PK)
-
-Thank you for your support, and I look forward to connecting with you!
