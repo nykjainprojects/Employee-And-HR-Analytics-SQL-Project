@@ -1,4 +1,3 @@
-<img width="65" height="21" alt="image" src="https://github.com/user-attachments/assets/746208c9-682d-41f4-a22e-ce96662f642a" /># Employee and HR Analytics SQL Project
 
 ## Project Overview
 
